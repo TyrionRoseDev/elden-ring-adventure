@@ -27,7 +27,7 @@ const CHOICES: Record<AttackId, DuelChoice[]> = {
   ],
 };
 
-const DECIDE_AT: Record<AttackId, number> = { cane: 0.55, daggers: 0.45, tea: 1.0 };
+const DECIDE_AT: Record<AttackId, number> = { cane: 0.6, daggers: 0.5, tea: 1.0 };
 export const CLOCK = 3.2; // real seconds to choose
 const OPENINGS = 4;
 

@@ -3,7 +3,7 @@ import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
 import type { Group, Mesh, MeshStandardMaterial, PerspectiveCamera } from "three";
-import { GAGS, useSel, type Core, type State } from "./core";
+import { GAGS, TELL, useSel, type Core, type State } from "./core";
 
 const PX = -1.6; // Tarnished home
 const BX = 1.6; // Margit home
@@ -15,6 +15,11 @@ const seg = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
 const easeOut = (p: number) => 1 - (1 - p) ** 3;
 const easeIn = (p: number) => p * p * p;
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
+/** Glint brightness around the tell moment, `TELL.lead` before a hit. */
+const tellPulse = (t: number, hit: number) => {
+  const at = hit - TELL.lead;
+  return t < at - 0.06 || t > at + 0.22 ? 0 : Math.sin(seg(t, at - 0.06, at + 0.22) * Math.PI);
+};
 
 type BossPose = {
   x: number;
@@ -25,6 +30,7 @@ type BossPose = {
   cup: "none" | "hand" | "mouth" | "down";
   cupAt: [number, number, number] | null; // world position when set down
   glint: number;
+  glintAt: [number, number, number] | null; // overrides the weapon tip
   daggers: ({ x: number; y: number; z: number; rot: number } | null)[];
 };
 
@@ -43,7 +49,7 @@ type PlayerPose = {
 
 function bossPose(s: State): BossPose {
   const b = s.boss;
-  const pose: BossPose = { x: BX, y: 0, lean: 0, arm: REST, weapon: "cane", cup: "none", cupAt: null, glint: 0, daggers: [null, null, null] };
+  const pose: BossPose = { x: BX, y: 0, lean: 0, arm: REST, weapon: "cane", cup: "none", cupAt: null, glint: 0, glintAt: null, daggers: [null, null, null] };
   pose.y = Math.sin(s.time * 2.2) * 0.02;
   pose.lean = -b.flinch * 0.25;
   if (s.mode === "won") {
@@ -58,15 +64,15 @@ function bossPose(s: State): BossPose {
   const hit = a.hits[0]!;
   const back = seg(t, a.end - 0.45, a.end);
   if (a.id === "cane") {
-    const raise = easeOut(seg(t, 0, 0.8));
-    const slam = easeIn(seg(t, 0.85, hit));
-    pose.arm = t < 0.85 ? lerp(REST, Math.PI, raise) : lerp(Math.PI, 5.0, slam);
+    const swingFrom = hit - TELL.swing;
+    const raise = easeOut(seg(t, 0, hit - 0.55));
+    const slam = easeIn(seg(t, swingFrom, hit));
+    pose.arm = t < swingFrom ? lerp(REST, Math.PI, raise) : lerp(Math.PI, 5.0, slam);
     if (t > hit) pose.arm = lerp(5.0, TAU + REST, back);
-    pose.x = lerp(BX, 1.2, raise);
-    if (t >= 0.85) pose.x = lerp(1.2, -0.1, slam);
+    pose.x = t < swingFrom ? lerp(BX, 1.2, raise) : lerp(1.2, -0.1, slam);
     if (t > hit) pose.x = lerp(-0.1, BX, easeOut(back));
-    pose.glint = t > 0.6 && t < 0.85 ? Math.sin(seg(t, 0.6, 0.85) * Math.PI) : 0;
-    pose.lean = t < 0.85 ? -0.15 * raise : 0.3 * slam;
+    pose.glint = tellPulse(t, hit);
+    pose.lean = t < swingFrom ? -0.15 * raise : 0.3 * slam;
   } else if (a.id === "daggers") {
     pose.arm = lerp(REST, Math.PI * 0.9, easeOut(seg(t, 0, 0.35)));
     if (t > a.hits[2]!) pose.arm = lerp(Math.PI * 0.9, TAU + REST, back);
@@ -81,18 +87,23 @@ function bossPose(s: State): BossPose {
         z: lerp(hover.z, 0, fly),
         rot: fly > 0 ? Math.PI / 2 : 0,
       };
-      if (t > h - 0.5 && t < h - 0.3) pose.glint = Math.max(pose.glint, Math.sin(seg(t, h - 0.5, h - 0.3) * Math.PI));
+      const g = tellPulse(t, h);
+      if (g > pose.glint) {
+        pose.glint = g;
+        pose.glintAt = [hover.x, hover.y, hover.z + 0.3];
+      }
     });
   } else {
     pose.weapon = "hammer";
+    const swingFrom = hit - TELL.swing;
     const raise = easeOut(seg(t, 0, 0.4));
-    const slam = easeIn(seg(t, hit - 0.12, hit));
-    pose.arm = t < hit - 0.12 ? lerp(REST, Math.PI, raise) : lerp(Math.PI, 5.0, slam);
+    const slam = easeIn(seg(t, swingFrom, hit));
+    pose.arm = t < swingFrom ? lerp(REST, Math.PI, raise) : lerp(Math.PI, 5.0, slam);
     if (t > hit) pose.arm = lerp(5.0, TAU + REST, back);
-    pose.x = t < hit - 0.12 ? lerp(BX, 1.3, raise) : lerp(1.3, 0.0, slam);
+    pose.x = t < swingFrom ? lerp(BX, 1.3, raise) : lerp(1.3, 0.0, slam);
     if (t > hit) pose.x = lerp(0.0, BX, easeOut(back));
-    if (t > 0.45 && t < hit - 0.3) pose.cup = Math.sin((t - 0.45) * 5) > -0.2 ? "mouth" : "hand";
-    pose.glint = t > hit - 0.35 && t < hit - 0.12 ? Math.sin(seg(t, hit - 0.35, hit - 0.12) * Math.PI) : 0;
+    if (t > 0.45 && t < hit - 0.5) pose.cup = Math.sin((t - 0.45) * 5) > -0.2 ? "mouth" : "hand";
+    pose.glint = tellPulse(t, hit);
     pose.lean = b.sipping ? -0.12 : 0.3 * slam;
   }
   return pose;
@@ -259,7 +270,8 @@ export function Stage({ core, children }: { core: Core; children?: ReactNode }) 
   const cane = useRef<Group>(null);
   const hammer = useRef<Group>(null);
   const cup = useRef<Group>(null);
-  const glint = useRef<Mesh>(null);
+  const glint = useRef<Group>(null);
+  const eyes = useRef<MeshStandardMaterial>(null);
   const daggers = useRef<(Group | null)[]>([]);
   const flinchMat = useRef<MeshStandardMaterial>(null);
   const hurtMat = useRef<MeshStandardMaterial>(null);
@@ -302,13 +314,13 @@ export function Stage({ core, children }: { core: Core; children?: ReactNode }) 
     }
     const g = glint.current!;
     g.visible = bp.glint > 0.01;
-    g.scale.set(0.03 + bp.glint * 0.07, 0.05 + bp.glint * 0.3, 0.03 + bp.glint * 0.07);
-    g.rotation.z = Math.PI / 4 + Math.sin(s.real * 9) * 0.2;
-    const tip = bp.weapon === "cane" && s.boss.attack?.id !== "daggers";
-    if (s.boss.attack?.id === "daggers") g.position.set(BX - 0.1, 2.6, 0);
+    g.scale.setScalar(0.2 + bp.glint * 0.9);
+    g.rotation.z = Math.sin(s.real * 9) * 0.25;
+    eyes.current!.emissiveIntensity = 2 + bp.glint * 10;
+    if (bp.glintAt) g.position.set(...bp.glintAt);
     else {
-      const len = tip ? 1.4 : 1.3;
-      g.position.set(bp.x - 0.25 + Math.sin(bp.arm) * len, 1.35 + bp.y - Math.cos(bp.arm) * len, 0.3);
+      const len = bp.weapon === "cane" ? 1.4 : 1.3;
+      g.position.set(bp.x - 0.25 + Math.sin(bp.arm) * len, 1.35 + bp.y - Math.cos(bp.arm) * len, 0.6);
     }
     bp.daggers.forEach((d, i) => {
       const m = daggers.current[i];
@@ -416,7 +428,7 @@ export function Stage({ core, children }: { core: Core; children?: ReactNode }) 
           {[-0.09, 0.09].map((z) => (
             <mesh key={z} position={[-0.26, 1.86, z]}>
               <sphereGeometry args={[0.035, 8, 8]} />
-              <meshStandardMaterial color="#ffcf4a" emissive="#ffb000" emissiveIntensity={2} />
+              <meshStandardMaterial ref={z < 0 ? eyes : undefined} color="#ffcf4a" emissive="#ffb000" emissiveIntensity={2} />
             </mesh>
           ))}
           <group ref={arm} position={[-0.25, 1.35, 0.3]}>
@@ -451,10 +463,18 @@ export function Stage({ core, children }: { core: Core; children?: ReactNode }) 
         <Bubble y={2.55}>{bubble}</Bubble>
       </group>
 
-      <mesh ref={glint}>
-        <octahedronGeometry args={[1, 0]} />
-        <meshBasicMaterial color="#fff6c8" toneMapped={false} />
-      </mesh>
+      <group ref={glint}>
+        {[0, Math.PI / 2].map((r) => (
+          <mesh key={r} rotation-z={r} scale={[0.07, 0.6, 0.07]}>
+            <octahedronGeometry args={[1, 0]} />
+            <meshBasicMaterial color="#fffbe0" toneMapped={false} />
+          </mesh>
+        ))}
+        <mesh scale={0.14}>
+          <sphereGeometry args={[1, 12, 10]} />
+          <meshBasicMaterial color="#ffd257" transparent opacity={0.85} toneMapped={false} />
+        </mesh>
+      </group>
       {[0, 1, 2].map((i) => (
         <group key={i} ref={(el) => void (daggers.current[i] = el)}>
           <mesh rotation-z={Math.PI / 2}>

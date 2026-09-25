@@ -28,11 +28,11 @@ export const GAGS: Record<GagId, { name: string; dur: number; epitaph: string }>
 export function rollAttack(id: AttackId): Attack {
   switch (id) {
     case "cane":
-      return { id, hits: [0.95], end: 1.9, damage: 34 };
+      return { id, hits: [1.2], end: 2.1, damage: 34 };
     case "daggers":
-      return { id, hits: [0.8, 1.4, 2.0], end: 2.6, damage: 14 }; // one roll per dagger, in rhythm
+      return { id, hits: [1.0, 1.6, 2.2], end: 2.8, damage: 14 }; // one roll per dagger, in rhythm
     case "tea": {
-      const hit = 1.7 + Math.random() * 0.9; // how long he sips is the whole trick
+      const hit = 1.9 + Math.random() * 0.9; // how long he sips is the whole trick
       return { id, hits: [hit], end: hit + 1.1, damage: 52 };
     }
   }
@@ -79,8 +79,34 @@ export type State = {
   version: number;
 };
 
+/**
+ * The tell rule every Killer's attack obeys: a glint and a "ting" exactly `lead` seconds before each hit,
+ * and the swing visibly moving for the last `swing` seconds. Difficulty comes from rhythm and fake-outs, never hidden cues.
+ */
+export const TELL = { lead: 0.45, swing: 0.3 };
+
+let audio: AudioContext | null = null;
+export function wakeAudio() {
+  audio ??= new AudioContext();
+  void audio.resume();
+}
+function ting() {
+  if (!audio || audio.state !== "running") return;
+  const t = audio.currentTime;
+  for (const [freq, gain] of [[2637, 0.18], [3951, 0.08]] as const) {
+    const osc = audio.createOscillator();
+    const amp = audio.createGain();
+    osc.frequency.value = freq;
+    amp.gain.setValueAtTime(gain, t);
+    amp.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    osc.connect(amp).connect(audio.destination);
+    osc.start(t);
+    osc.stop(t + 0.4);
+  }
+}
+
 /** Roll timing: invulnerable from `from` to `to` seconds after the press; perfect if the hit lands by `perfect`. */
-export const DODGE = { dur: 0.55, from: 0.04, to: 0.4, perfect: 0.16 };
+export const DODGE = { dur: 0.6, from: 0.03, to: 0.48, perfect: 0.18 };
 
 const idle = (): PlayerAct => ({ kind: "idle", t: 0, dur: 0, dir: 0 });
 
@@ -92,6 +118,7 @@ export abstract class Core {
   private listeners = new Set<() => void>();
   private queue: { at: number; fn: () => void }[] = [];
   private hitIndex = 0;
+  private tellIndex = 0;
   readonly usesStamina: boolean = false;
 
   constructor(public lethality: Lethality, bossHp: number) {
@@ -149,7 +176,11 @@ export abstract class Core {
       const b = s.boss;
       const a = b.attack!;
       b.at += dt;
-      b.sipping = a.id === "tea" && b.at > 0.45 && b.at < a.hits[0]! - 0.3;
+      b.sipping = a.id === "tea" && b.at > 0.45 && b.at < a.hits[0]! - 0.5;
+      while (this.tellIndex < a.hits.length && b.at >= a.hits[this.tellIndex]! - TELL.lead) {
+        this.tellIndex++;
+        if (s.mode === "fight") ting();
+      }
     }
     if (s.gag) {
       s.gag.t += dt;
@@ -189,6 +220,7 @@ export abstract class Core {
     b.at = 0;
     b.sipping = false;
     this.hitIndex = 0;
+    this.tellIndex = 0;
     this.state.bossBubble = null;
     this.log(`Margit: ${ATTACK_INFO[id].name}`);
     return attack;

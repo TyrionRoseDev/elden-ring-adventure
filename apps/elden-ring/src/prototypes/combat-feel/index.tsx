@@ -5,7 +5,7 @@ import { Html } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { PrototypeSwitcher, useVariant } from "../PrototypeSwitcher";
-import { ATTACK_INFO, GAGS, useSel, type Core, type Lethality } from "./core";
+import { ATTACK_INFO, GAGS, useSel, wakeAudio, type Core, type Lethality } from "./core";
 import { CLOCK, Duel } from "./duel";
 import { CHARGE, HYBRID_MENU, Hybrid, RING } from "./hybrid";
 import { Stage } from "./Stage";
@@ -53,6 +53,7 @@ export default function CombatFeelPrototype() {
     (window as unknown as { __cf: Core }).__cf = core; // poke it from devtools
     const handle = (down: boolean) => (e: KeyboardEvent) => {
       if (e.repeat) return;
+      wakeAudio();
       if (e.code === "Space" || e.code.startsWith("Digit")) e.preventDefault();
       if (down && e.code === "KeyR" && core.state.mode !== "fight" && core.state.mode !== "gag") return restart();
       core.key(e.code, down);
@@ -68,7 +69,7 @@ export default function CombatFeelPrototype() {
   }, [core]);
 
   return (
-    <div className="cf">
+    <div className="cf" onPointerDown={wakeAudio}>
       <Canvas shadows camera={{ fov: 36, position: [0, 2.3, 7.4] }} dpr={[1, 2]}>
         <Ticker core={core} />
         <Stage core={core}>
