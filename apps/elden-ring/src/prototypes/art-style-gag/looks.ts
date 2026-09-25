@@ -14,7 +14,7 @@ import {
   type Object3D,
 } from "three";
 
-export type VariantKey = "A" | "B" | "C" | "D";
+export type VariantKey = "A" | "B" | "C" | "D" | "E";
 type Body = "A" | "B" | "C";
 
 export type Look = {
@@ -42,7 +42,7 @@ export type Look = {
   };
 };
 
-export const LOOKS: Record<VariantKey, Look> = {
+const BASE: Record<Body, Look> = {
   A: {
     key: "A",
     name: "Chibi cel",
@@ -94,24 +94,26 @@ export const LOOKS: Record<VariantKey, Look> = {
     exposure: 1.0,
     post: { bloom: 1.1, saturation: -0.02, vignette: 0.6, grain: 0.11, sepia: 0.08, tiltShift: 0 },
   },
-  D: {
-    key: "D",
-    name: "Cel, cinematic grade",
-    blurb: "A's chibi cel + ink outlines, graded with B's colours · no blur · light vignette",
-    body: "A",
-    shading: "toon",
-    toneMapping: "aces",
-    bands: [140, 205, 255],
-    outline: { thickness: 0.012, color: "#1d1712" },
-    tint: null,
-    sky: { top: "#5f8fd0", horizon: "#f6d7a6", ground: "#7d8a4c" },
-    fog: [15, 65],
-    sun: { color: "#ffe2b8", intensity: 3.4, position: [-5, 8, 6] },
-    fill: { sky: "#cfe0ff", ground: "#5e4c33", intensity: 1.2 },
-    exposure: 1.05,
-    post: { bloom: 0.7, saturation: 0.22, vignette: 0.22, grain: 0, sepia: 0, tiltShift: 0 },
-  },
 };
+
+// B's clay shading, lighting and grade, minus the tilt-shift blur, with a lighter vignette
+const D: Look = {
+  ...BASE.B,
+  key: "D",
+  name: "Clay, no blur",
+  blurb: "B's shading, light and colour · tilt-shift blur off · lighter vignette",
+  post: { ...BASE.B.post, tiltShift: 0, vignette: 0.25 },
+};
+// the same, with a whisper of A's ink line
+const E: Look = {
+  ...D,
+  key: "E",
+  name: "Clay, no blur, fine ink",
+  blurb: "D plus a thin ink outline from A",
+  outline: { thickness: 0.005, color: "#2a2019" },
+};
+
+export const LOOKS: Record<VariantKey, Look> = { ...BASE, D, E };
 
 function gradient(bands: number[]) {
   const tex = new DataTexture(new Uint8Array(bands), bands.length, 1, RedFormat);

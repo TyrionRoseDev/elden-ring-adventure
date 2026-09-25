@@ -21,7 +21,7 @@ import { Gag, type HudState } from "./Gag";
 import { LOOKS, type VariantKey } from "./looks";
 import "./hud.css";
 
-const KEYS = ["A", "B", "C", "D"] as const satisfies readonly VariantKey[];
+const KEYS = ["A", "B", "C", "D", "E"] as const satisfies readonly VariantKey[];
 
 export default function ArtStyleGagPrototype() {
   const [variant, setVariant] = useVariant(KEYS);
