@@ -15,7 +15,7 @@ One authored moment that plays out in a Location when the World State allows it:
 _Avoid_: Page, node, screen
 
 **Choice**:
-An option the player picks inside a Scene. It can lead to another Scene, travel to another Location, start Combat, or play a Vignette. Some Choices are traps.
+An option the player picks inside a Scene. It can lead to another Scene, travel to another Location, start a Fight, or play a Vignette. Some Choices are traps.
 _Avoid_: Option, branch, link
 
 **Line**:
@@ -91,6 +91,44 @@ _Avoid_: Death animation, fail state, kill
 **Aftermath**:
 The mundane thing the Killer does after the kill, like sitting on the corpse with a cup of tea. The second half of every boss Gag.
 
+### Combat
+
+**Fight**:
+One combat encounter between the Tarnished and a Killer, played in a single Style. A Killer's strength is fixed; it never scales to the Tarnished.
+_Avoid_: Battle, encounter, combat (for one instance)
+
+**Style**:
+How a Fight plays: a Brawl, a Duel, a Clash or a Standoff. The Fight sets it, never the player.
+_Avoid_: Mode, combat system
+
+**Brawl**:
+The real-time Style: roll through the Killer's hits and strike between them. For physical bosses like Margit.
+_Avoid_: Action combat, real-time fight
+
+**Duel**:
+The turn-based Style, where knowing a Killer's weaknesses to Affinities and Statuses decides the Fight. For sorcerers and other casters.
+_Avoid_: Turn-based battle, spell fight
+
+**Clash**:
+The Style where the Tarnished picks an action from a menu, lands it with timed presses, and rolls the Killer's hits by hand. For weapon-masters like Crucible Knights.
+_Avoid_: Hybrid, action commands
+
+**Standoff**:
+Time nearly stops and the Tarnished must pick a response before a clock runs out; a wrong pick is an instant Gag. It can interrupt any Fight or appear in any Scene.
+_Avoid_: Quick-time event, choice duel
+
+**Tell**:
+The visible warning a Killer gives before a hit lands. Every hit has one.
+_Avoid_: Telegraph, cue
+
+**Affinity**:
+A kind of damage, such as physical, magic, fire, lightning or holy. Killers are weak or resistant to some, and the Tarnished learns which by playing.
+_Avoid_: Element, damage type
+
+**Status**:
+An effect that builds up over several hits and then triggers, such as poison, Scarlet Rot or bleed.
+_Avoid_: Debuff, ailment, condition
+
 ### Progression
 
 **Runes**:
@@ -104,7 +142,7 @@ _Avoid_: Skill tree, stat screen, levelling
 ### Architecture
 
 **Engine**:
-The reusable package: runs Scenes, plays Vignettes, resolves Combat, tracks the Tree and saves. Holds only what the first game needs.
+The reusable package: runs Scenes, plays Vignettes, runs Fights, tracks the Tree and saves. Holds only what the first game needs.
 _Avoid_: Framework, core, platform
 
 **Game**:
