@@ -1,0 +1,191 @@
+/* PROTOTYPE HUD: Elden Ring-ish bars, the YOU DIED band, and the speech bubbles. */
+.proto {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  font-family: "Cinzel", "Trajan Pro", "Cormorant Garamond", Georgia, serif;
+  color: #e9dfc6;
+  overflow: hidden;
+}
+
+.bubble {
+  background: #fffaf0;
+  color: #1d1712;
+  border: 3px solid #1d1712;
+  border-radius: 999px;
+  min-width: 34px;
+  padding: 4px 12px;
+  font: 900 26px/1 Georgia, serif;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  animation: bubble-pop 0.28s cubic-bezier(0.3, 1.8, 0.5, 1) both;
+  white-space: nowrap;
+  user-select: none;
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top: 10px solid #1d1712;
+}
+@keyframes bubble-pop {
+  from {
+    transform: scale(0.2) translateY(20px);
+    opacity: 0;
+  }
+}
+
+.hud-player {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  display: grid;
+  gap: 5px;
+}
+.bar {
+  height: 7px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(233, 223, 198, 0.55);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+.bar i {
+  display: block;
+  height: 100%;
+  transition: width 0.25s ease-in;
+}
+.bar.hp {
+  width: 260px;
+}
+.bar.hp i {
+  background: linear-gradient(#c23b30, #7a1b16);
+}
+.bar.fp {
+  width: 200px;
+}
+.bar.fp i {
+  background: linear-gradient(#4a6ed0, #213a86);
+}
+.bar.st {
+  width: 180px;
+}
+.bar.st i {
+  background: linear-gradient(#5aa04a, #2b5a22);
+}
+
+.hud-boss {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  width: min(60vw, 820px);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+.hud-boss.show {
+  opacity: 1;
+}
+.boss-name {
+  font-size: 19px;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 3px #000;
+}
+.boss-name span {
+  font-size: 14px;
+  opacity: 0.7;
+  font-style: italic;
+}
+.bar.boss {
+  height: 9px;
+}
+.bar.boss i {
+  background: linear-gradient(#a52a22, #5e120e);
+}
+
+.you-died {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.4s ease-in;
+}
+.you-died.show {
+  opacity: 1;
+}
+.you-died .band {
+  width: 100%;
+  padding: 26px 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.82) 25%, rgba(0, 0, 0, 0.82) 75%, transparent);
+  text-align: center;
+}
+.you-died .words {
+  font-size: clamp(48px, 8vw, 104px);
+  letter-spacing: 0.08em;
+  color: #a3201b;
+  text-shadow: 0 0 22px rgba(163, 32, 27, 0.55);
+  transform: scale(0.94);
+  transition: transform 4s ease-out;
+}
+.you-died.show .words {
+  transform: scale(1.04);
+}
+.epitaph {
+  position: absolute;
+  top: calc(50% + 90px);
+  width: 100%;
+  text-align: center;
+  font-size: 20px;
+  font-style: italic;
+  opacity: 0;
+  transition: opacity 1s;
+}
+.epitaph.show {
+  opacity: 0.85;
+}
+
+.proto-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 12px 14px;
+  background: rgba(20, 16, 12, 0.72);
+  border: 1px solid rgba(233, 223, 198, 0.25);
+  border-radius: 10px;
+  font: 13px/1.4 system-ui, sans-serif;
+  max-width: 290px;
+  z-index: 100;
+}
+.proto-look {
+  font: 700 15px/1.2 system-ui, sans-serif;
+}
+.proto-blurb {
+  opacity: 0.75;
+  margin: 3px 0 10px;
+}
+.proto-buttons {
+  display: flex;
+  gap: 8px;
+}
+.proto-buttons button {
+  all: unset;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #e9dfc6;
+  color: #1d1712;
+  font-weight: 600;
+}
+.proto-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+}
