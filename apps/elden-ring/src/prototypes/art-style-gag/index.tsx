@@ -21,7 +21,7 @@ import { Gag, type HudState } from "./Gag";
 import { LOOKS, type VariantKey } from "./looks";
 import "./hud.css";
 
-const KEYS = ["A", "B", "C"] as const satisfies readonly VariantKey[];
+const KEYS = ["A", "B", "C", "D"] as const satisfies readonly VariantKey[];
 
 export default function ArtStyleGagPrototype() {
   const [variant, setVariant] = useVariant(KEYS);
@@ -58,7 +58,7 @@ export default function ArtStyleGagPrototype() {
         {free && <OrbitControls target={[0.3, 0.8, -0.3]} makeDefault />}
         <EffectComposer multisampling={4}>
           <Bloom intensity={look.post.bloom} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />
-          <ToneMapping mode={look.shading === "clay" ? ToneMappingMode.ACES_FILMIC : ToneMappingMode.LINEAR} />
+          <ToneMapping mode={look.toneMapping === "aces" ? ToneMappingMode.ACES_FILMIC : ToneMappingMode.LINEAR} />
           <HueSaturation saturation={look.post.saturation} />
           <Sepia intensity={look.post.sepia} />
           <TiltShift2 blur={look.post.tiltShift * 0.18} taper={0.6} start={[0.5, 0.0]} end={[0.5, 1.0]} />

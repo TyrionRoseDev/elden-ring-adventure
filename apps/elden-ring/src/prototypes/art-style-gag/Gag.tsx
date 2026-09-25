@@ -82,7 +82,7 @@ export function Gag({
   free: boolean;
   onHud: (h: Partial<HudState>) => void;
 }) {
-  const v = look.key;
+  const v = look.body;
   const S = MARGIT_SCALE[v];
   const tarn = useActor(`${BASE}tarnished_${v}.glb`, look, [["Sword", "hand_R"]]);
   const margit = useActor(`${BASE}margit_${v}.glb`, look, [

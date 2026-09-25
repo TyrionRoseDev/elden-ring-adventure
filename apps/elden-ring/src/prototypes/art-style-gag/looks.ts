@@ -14,13 +14,16 @@ import {
   type Object3D,
 } from "three";
 
-export type VariantKey = "A" | "B" | "C";
+export type VariantKey = "A" | "B" | "C" | "D";
+type Body = "A" | "B" | "C";
 
 export type Look = {
   key: VariantKey;
   name: string;
   blurb: string;
+  body: Body; // which proportions (GLB set) to load
   shading: "toon" | "clay";
+  toneMapping: "linear" | "aces";
   bands: number[]; // toon gradient steps, 0..255
   outline: { thickness: number; color: string } | null;
   tint: { color: string; amount: number } | null; // pull every colour toward a paper tone
@@ -44,7 +47,9 @@ export const LOOKS: Record<VariantKey, Look> = {
     key: "A",
     name: "Chibi cel",
     blurb: "2 heads tall · 3-band toon · ink outlines · bright",
+    body: "A",
     shading: "toon",
+    toneMapping: "linear",
     bands: [140, 205, 255],
     outline: { thickness: 0.012, color: "#1d1712" },
     tint: null,
@@ -59,7 +64,9 @@ export const LOOKS: Record<VariantKey, Look> = {
     key: "B",
     name: "Clay diorama",
     blurb: "2.6 heads · soft plasticine PBR · no outlines · tilt-shift miniature",
+    body: "B",
     shading: "clay",
+    toneMapping: "aces",
     bands: [],
     outline: null,
     tint: null,
@@ -74,7 +81,9 @@ export const LOOKS: Record<VariantKey, Look> = {
     key: "C",
     name: "Storybook ink",
     blurb: "3.6 heads · 2-band toon · heavy ink · parchment golden hour",
+    body: "C",
     shading: "toon",
+    toneMapping: "linear",
     bands: [150, 255],
     outline: { thickness: 0.02, color: "#221a14" },
     tint: { color: "#e8d3a6", amount: 0.16 },
@@ -84,6 +93,23 @@ export const LOOKS: Record<VariantKey, Look> = {
     fill: { sky: "#f5e1bb", ground: "#5a4630", intensity: 1.1 },
     exposure: 1.0,
     post: { bloom: 1.1, saturation: -0.02, vignette: 0.6, grain: 0.11, sepia: 0.08, tiltShift: 0 },
+  },
+  D: {
+    key: "D",
+    name: "Cel, cinematic grade",
+    blurb: "A's chibi cel + ink outlines, graded with B's colours · no blur · light vignette",
+    body: "A",
+    shading: "toon",
+    toneMapping: "aces",
+    bands: [140, 205, 255],
+    outline: { thickness: 0.012, color: "#1d1712" },
+    tint: null,
+    sky: { top: "#5f8fd0", horizon: "#f6d7a6", ground: "#7d8a4c" },
+    fog: [15, 65],
+    sun: { color: "#ffe2b8", intensity: 3.4, position: [-5, 8, 6] },
+    fill: { sky: "#cfe0ff", ground: "#5e4c33", intensity: 1.2 },
+    exposure: 1.05,
+    post: { bloom: 0.7, saturation: 0.22, vignette: 0.22, grain: 0, sepia: 0, tiltShift: 0 },
   },
 };
 
