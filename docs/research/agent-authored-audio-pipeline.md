@@ -68,3 +68,14 @@ Machine: macOS 26.6.2 arm64, Python 3.14.0, Node 24.14.0; none of fluidsynth/sox
 - Avoid: Arachno (all rights reserved), Timbres of Heaven, SGM (unclear). [H/L]
 - sfizz 1.2.3 BSD-2, repo archived, macOS sfizz_render x86_64 only; one SFZ per render. [H/M]
 - FluidSynth 2.6.1: `fluidsynth -ni -q -F out.wav -r 48000 -g 0.5 -R 1 -C 0 -O float -T wav font.sf2 song.mid`; gain clipping ~0.4 with GeneralUser (#1405); ~2-3 s tail (#1433); no normalise/stop-at-EOT (#1407/#1408). [H]
+
+## Runtime strand findings (to fold into final doc)
+
+- Web Audio `start(when, offset, duration)` sample-accurate; stems started at same `when` stay locked; loop points valid only when 0 <= loopStart < loopEnd. [H]
+- Anchor ramps with setValueAtTime; `cancelAndHoldAtTime` not in Firefox. [H]
+- Decoded PCM is Float32: stereo 48 kHz ~23 MB/min. Decode on demand, evict. [H]
+- Tone.js latest 15.1.22 vs next 15.5.42 (fixes #1441 quantisation, #1444 double tick, #1443 playbackRate). Use getTransport(); `"@1m"` quantise; nextSubdivision; Players; CrossFade; setContext(nativeCtx). [H]
+- Howler 2.2.4: no time arg to play(), no transport; SFX only. [H]
+- Safari 18.4 added Ogg Opus/Vorbis; Safari decodeAudioData Ogg unverified. Avoid MP3 for loops. Opus 96-128 kbps transparent. [H/M]
+- THREE.AudioContext.setContext before any AudioListener; drei PositionalAudio makes own listener. [H/M]
+- orchestre-js 3.1.0 small single-author; otherwise Tone.js is the base. [M]
