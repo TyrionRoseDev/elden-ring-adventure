@@ -53,3 +53,18 @@ Resolves GitHub issue #15. Date of research: 2026-09-25. WORK IN PROGRESS: secti
 | `stable-audio-tools` | 0.0.20 (py <3.11) | – |
 
 Machine: macOS 26.6.2 arm64, Python 3.14.0, Node 24.14.0; none of fluidsynth/sox/ffmpeg installed yet.
+
+## Sample libraries and SoundFonts (strand findings, to be folded into final doc)
+
+- GeneralUser GS 2.0.3 (2026-02-22), 32 MB SF2, custom licence: use without restriction, no attribution; author asks not to hotlink downloads, so pin GitHub raw at commit 97049183643d5fc5a9322a69c5b09efb667c6c3a. Provenance of all samples not certain per author. Tuba, bassoon, pizz, timpani, choir, glock, accordion, organ, whistle, ocarina, SFX kit; no kazoo/slide whistle. [H]
+- FluidR3_GM 3.1: MIT, keep notice. [H]
+- MuseScore_General 0.2.0: MIT with acknowledgements kept; SF2 215 MB / SF3 40 MB. [H]
+- Sonatina Symphonic Orchestra v4.0 (peastman/sso): CC Sampling Plus 1.0; transformed output OK incl. commercial; attribution. [H]
+- VSCO 2 CE 1.1.0: CC0, SFZ branch, ~2.3 GB. [H]
+- VCSL: CC0; slapstick, flexatone, vibraslap, ratchet, anvil, brake drum, toy train whistle, siren, ocarinas, harmonicas, recorders, kalimba. [H]
+- Karoryfer: CC0 (War Tuba, Sneakybass, Squidpipes, Bear Sax). [H]
+- FreePats Button Accordion HN, Upright Piano KW: CC0. [H]
+- Salamander Grand V3: CC BY 3.0. [H]
+- Avoid: Arachno (all rights reserved), Timbres of Heaven, SGM (unclear). [H/L]
+- sfizz 1.2.3 BSD-2, repo archived, macOS sfizz_render x86_64 only; one SFZ per render. [H/M]
+- FluidSynth 2.6.1: `fluidsynth -ni -q -F out.wav -r 48000 -g 0.5 -R 1 -C 0 -O float -T wav font.sf2 song.mid`; gain clipping ~0.4 with GeneralUser (#1405); ~2-3 s tail (#1433); no normalise/stop-at-EOT (#1407/#1408). [H]
